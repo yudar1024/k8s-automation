@@ -1,0 +1,75 @@
+---
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  labels:
+    elastic-app: elasticsearch
+    role: master
+  name: elasticsearch-master
+  namespace: ns-elasticsearch
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      elastic-app: elasticsearch
+      role: master
+  template:
+    metadata:
+      labels:
+        elastic-app: elasticsearch
+        role: master
+    spec:
+      containers:
+        - name: elasticsearch-master
+          image: amazon/opendistro-for-elasticsearch:1.1.0
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/bash", "-c", "sysctl -w vm.max_map_count=262144; ulimit -l unlimited;"]
+          ports:
+            - containerPort: 9200
+              protocol: TCP
+            - containerPort: 9300
+              protocol: TCP
+          env:
+            - name: "cluster.name"
+              value: "elasticsearch-cluster"
+            - name: "bootstrap.memory_lock"
+              value: "true"
+            - name: "discovery.zen.ping.unicast.hosts"
+              value: "elasticsearch-discovery"
+            - name: "discovery.zen.minimum_master_nodes"
+              value: "2"
+            - name: "discovery.zen.ping_timeout"
+              value: "5s"
+            - name: "node.master"
+              value: "true"
+            - name: "node.data"
+              value: "false"
+            - name: "node.ingest"
+              value: "false"
+            - name: "ES_JAVA_OPTS"
+              value: "-Xms256m -Xmx256m"
+          securityContext:
+            privileged: true
+      serviceAccountName: elasticsearch-admin
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    elastic-app: elasticsearch
+  name: elasticsearch-discovery
+  namespace: ns-elasticsearch
+spec:
+  ports:
+    - port: 9300
+      targetPort: 9300
+  selector:
+    elastic-app: elasticsearch
+    role: master

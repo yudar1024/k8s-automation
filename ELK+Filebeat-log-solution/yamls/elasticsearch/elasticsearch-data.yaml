@@ -1,0 +1,74 @@
+---
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  labels:
+    elastic-app: elasticsearch
+    role: data
+  name: elasticsearch-data
+  namespace: ns-elasticsearch
+spec:
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      elastic-app: elasticsearch
+  template:
+    metadata:
+      labels:
+        elastic-app: elasticsearch
+        role: data
+    spec:
+      containers:
+        - name: elasticsearch-data
+          image: amazon/opendistro-for-elasticsearch:1.1.0
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/bash", "-c", "sysctl -w vm.max_map_count=262144; ulimit -l unlimited;"]
+          ports:
+            - containerPort: 9200
+              protocol: TCP
+            - containerPort: 9300
+              protocol: TCP
+          volumeMounts:
+            - name: esdata
+              mountPath: /usr/share/elasticsearch/data
+          env:
+            - name: "cluster.name"
+              value: "elasticsearch-cluster"
+            - name: "bootstrap.memory_lock"
+              value: "true"
+            - name: "discovery.zen.ping.unicast.hosts"
+              value: "elasticsearch-discovery"
+            - name: "node.master"
+              value: "false"
+            - name: "node.data"
+              value: "true"
+            - name: "ES_JAVA_OPTS"
+              value: "-Xms256m -Xmx256m"
+          securityContext:
+            privileged: true
+      volumes:
+        - name: esdata
+          emptyDir: {}
+      serviceAccountName: elasticsearch-admin
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    elastic-app: elasticsearch-service
+  name: elasticsearch-service
+  namespace: ns-elasticsearch
+spec:
+  ports:
+    - port: 9200
+      targetPort: 9200
+  selector:
+    elastic-app: elasticsearch
+  type: NodePort
