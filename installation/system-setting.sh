@@ -37,6 +37,8 @@ echo "* soft memlock unlimited" >> /etc/security/limits.d/k8slimits.conf
 echo "* hard memlock unlimited" >> /etc/security/limits.d/k8slimits.conf
 echo "DefaultLimitNPROC=1024000" >> /etc/systemd/system.conf
 echo "DefaultLimitNOFILE=1024000" >> /etc/systemd/system.conf
+#此处是个坑， 如果此项没开，elasticsearch 没法集群部署，报bootstrap 错误 [1]: memory locking requested for elasticsearch process but memory is not locked
+echo "DefaultLimitMEMLOCK=infinity" >> /etc/systemd/system.conf
 
 # 加载ipvs 所需的内核模块
 touch /etc/sysconfig/modules/ipvs.modules
