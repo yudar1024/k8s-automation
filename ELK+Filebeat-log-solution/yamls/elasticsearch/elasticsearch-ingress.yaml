@@ -5,7 +5,7 @@ metadata:
  labels:
    app: elasticsearch
  name: elasticsearch-service
- namespace: ns-elastic
+ namespace: ns-es
 spec:
  ports:
    - port: 9200
@@ -19,7 +19,7 @@ metadata:
  labels:
    app: elasticsearch
  name: elasticsearch-ingress
- namespace: ns-elastic
+ namespace: ns-es
 spec:
  rules:
    - host: elasticsearch.kube.com

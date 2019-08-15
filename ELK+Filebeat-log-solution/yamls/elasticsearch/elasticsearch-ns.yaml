@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: ns-elasticsearch
+  name: ns-es
   labels:
-    name: ns-elasticsearch
+    name: ns-es
 
 ---
 apiVersion: v1
@@ -13,7 +13,7 @@ metadata:
   labels:
     elastic-app: elasticsearch
   name: elasticsearch-admin
-  namespace: ns-elasticsearch
+  namespace: ns-es
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
