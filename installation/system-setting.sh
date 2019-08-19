@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash 
 # 在所有 master 节点与 node 节点执行
 # close firewall
 systemctl stop firewalld
@@ -54,5 +54,30 @@ chmod 755 /etc/sysconfig/modules/ipvs.modules
 bash /etc/sysconfig/modules/ipvs.modules
 # 查看加载
 lsmod | grep -e ip_vs -e nf_conntrack_ipv4
+
+touch /etc/docker/daemon.json
+echo '{'>> /etc/docker/daemon.json
+echo '  "log-opts": {' >> /etc/docker/daemon.json
+echo '    "max-size": "100m"' >> /etc/docker/daemon.json
+echo '  },' >> /etc/docker/daemon.json
+echo '  "storage-driver": "overlay2",' >> /etc/docker/daemon.json
+echo '  "exec-opts": ["native.cgroupdriver=systemd"],' >> /etc/docker/daemon.json
+echo '  "dns":["114.114.114.114"],' >> /etc/docker/daemon.json
+echo '  "dns-search":["default.svc.cluster.local","svc.cluster.local","localdomain"],' >> /etc/docker/daemon.json
+echo '  "dns-opt":["ndots:2","timeout:2","attempts:2"],' >> /etc/docker/daemon.json
+echo '  "registry-mirrors": [' >> /etc/docker/daemon.json
+echo '    "https://fmu2ap2k.mirror.aliyuncs.com",' >> /etc/docker/daemon.json
+echo '    "https://gcr-mirror.qiniu.com",' >> /etc/docker/daemon.json
+echo '    "https://quay-mirror.qiniu.com",' >> /etc/docker/daemon.json
+echo '    "https://docker.mirrors.ustc.edu.cn",' >> /etc/docker/daemon.json
+echo '    "https://mirror.ccs.tencentyun.com",' >> /etc/docker/daemon.json
+echo '    "http://hub-mirror.c.163.com",' >> /etc/docker/daemon.json
+echo '    "https://reg-mirror.qiniu.com",' >> /etc/docker/daemon.json
+echo '    "http://f1361db2.m.daocloud.io",' >> /etc/docker/daemon.json
+echo '    "https://registry.docker-cn.com"' >> /etc/docker/daemon.json
+echo '  ]' >> /etc/docker/daemon.json
+echo '}' >> /etc/docker/daemon.json
+
+
 
 
