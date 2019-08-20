@@ -28,6 +28,7 @@ sed -i "s?k8s.gcr.io?registry.cn-hangzhou.aliyuncs.com/google_containers?" kubea
 sed -i 's?imageRepository: k8s.gcr.io?imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers?' kubeadm-init.yaml
 sed -i '/dnsDomain: cluster.local/a\  podSubnet: "10.254.64.0/18"' kubeadm-init.yaml
 sed -i 's?10.96.0.0/12?10.254.0.0/18?' kubeadm-init.yaml
+kubeadm init --config kubeadm-init.yaml
 
 
 
