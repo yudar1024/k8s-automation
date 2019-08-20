@@ -1,4 +1,5 @@
 #!/bin/bash 
+# 本脚本假设使用者已经装好了与K8S 相对应的docker
 # 在所有 master 节点与 node 节点执行
 # close firewall
 systemctl stop firewalld
@@ -78,6 +79,11 @@ echo '    "https://registry.docker-cn.com"' >> /etc/docker/daemon.json
 echo '  ]' >> /etc/docker/daemon.json
 echo '}' >> /etc/docker/daemon.json
 
+# 添加kubernetes 安装源为阿里源
+mv kubernetes.repo /etc/yum.repos.d/
+setenforce 0
+yum install -y kubelet kubeadm kubectl
+echo "you must restart your compute to make the change effect"
 
 
 
