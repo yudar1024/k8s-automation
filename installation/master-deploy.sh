@@ -14,7 +14,7 @@ echo 'cgroupDriver: systemd' >> kubeadm-init.yaml
 echo '结束添加kubelet 相关配置'
 echo '替换 kubeadm apiserver 地址'
 sed -i 's/advertiseAddress: 1.2.3.4/advertiseAddress: 127.0.0.1/g' kubeadm-init.yaml
-sed -i '/clusterName: kubernetes/a\controlPlaneEndpoint: "127.0.0.1:8443"' kubeadm-init.yaml
+sed -i '/clusterName: kubernetes/a\controlPlaneEndpoint: "127.0.0.1:9443"' kubeadm-init.yaml
 echo 'k8s version'
 sed -i '/kubernetesVersion/d' kubeadm-init.yaml
 versionkey="kubernetesVersion:"
