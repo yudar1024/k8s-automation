@@ -51,8 +51,6 @@ kubectl apply -f crd/prometheusrule.crd.yaml
 kubectl apply -f crd/servicemonitor.crd.yaml
 kubectl apply -f crd/podmonitor.crd.yaml
 
-git clone https://github.com/helm/charts.git
-cd charts
 helm install --name my-po stable/prometheus-operator --set prometheusOperator.createCustomResource=false \
   --set prometheusOperator.image.repository=quay.azk8s.cn/coreos/prometheus-operator \
   --set prometheusOperator.configmapReloadImage.repository=quay.azk8s.cn/coreos/configmap-reload \
