@@ -57,5 +57,12 @@ helm install --name my-po stable/prometheus-operator --set prometheusOperator.cr
   --set prometheusOperator.prometheusConfigReloaderImage.repository=quay.azk8s.cn/coreos/prometheus-config-reloader \
   --set prometheus.prometheusSpec.image.repository=quay.azk8s.cn/prometheus/prometheus \
   --set alertmanager.alertmanagerSpec.image.repository=quay.azk8s.cn/prometheus/alertmanager \
-  --set prometheusOperator.hyperkubeImage.repository=gcr.azk8s.cn/google-containers/hyperkube
+  --set prometheusOperator.hyperkubeImage.repository=gcr.azk8s.cn/google-containers/hyperkube \
+  --set image.repository=quay.azk8s.cn/prometheus/node-exporter
+
+
+# get username and password
+kubectl get secret my-po-grafana -o jsonpath='{.data.admin-user}' |base64 --decode
+kubectl get secret my-po-grafana -o jsonpath='{.data.admin-password}' |base64 --decode
+
 
