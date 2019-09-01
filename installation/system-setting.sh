@@ -1,6 +1,17 @@
 #!/bin/bash 
 # 本脚本假设使用者已经装好了与K8S 相对应的docker
 # 在所有 master 节点与 node 节点执行
+if [ `whoami` != 'root' ]
+then
+    echo 'you must run this script as root'
+    exit 0
+fi
+
+# install neovim, this is optional
+yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+yum install -y neovim python3-neovim
+
+
 # close firewall
 systemctl stop firewalld
 systemctl disable firewalld
@@ -43,12 +54,12 @@ echo "DefaultLimitMEMLOCK=infinity" >> /etc/systemd/system.conf
 
 # 加载ipvs 所需的内核模块
 touch /etc/sysconfig/modules/ipvs.modules
-echo "#!/bin/bash" /etc/sysconfig/modules/ipvs.modules
-echo "modprobe -- ip_vs" /etc/sysconfig/modules/ipvs.modules
-echo "modprobe -- ip_vs_rr" /etc/sysconfig/modules/ipvs.modules
-echo "modprobe -- ip_vs_wrr" /etc/sysconfig/modules/ipvs.modules
-echo "modprobe -- ip_vs_sh" /etc/sysconfig/modules/ipvs.modules
-echo "modprobe -- nf_conntrack_ipv4" /etc/sysconfig/modules/ipvs.modules
+echo "#!/bin/bash" >> /etc/sysconfig/modules/ipvs.modules
+echo "modprobe -- ip_vs" >> /etc/sysconfig/modules/ipvs.modules
+echo "modprobe -- ip_vs_rr" >> /etc/sysconfig/modules/ipvs.modules
+echo "modprobe -- ip_vs_wrr" >> /etc/sysconfig/modules/ipvs.modules
+echo "modprobe -- ip_vs_sh" >> /etc/sysconfig/modules/ipvs.modules
+echo "modprobe -- nf_conntrack_ipv4" >> /etc/sysconfig/modules/ipvs.modules
 # 授权
 chmod 755 /etc/sysconfig/modules/ipvs.modules 
 # 加载模块
@@ -56,6 +67,7 @@ bash /etc/sysconfig/modules/ipvs.modules
 # 查看加载
 lsmod | grep -e ip_vs -e nf_conntrack_ipv4
 
+mkdir - /etc/docker
 touch /etc/docker/daemon.json
 echo '{'>> /etc/docker/daemon.json
 echo '  "log-opts": {' >> /etc/docker/daemon.json
@@ -79,11 +91,28 @@ echo '    "https://registry.docker-cn.com"' >> /etc/docker/daemon.json
 echo '  ]' >> /etc/docker/daemon.json
 echo '}' >> /etc/docker/daemon.json
 
+# 添加阿里docker安装源
+yum install -y yum-utils device-mapper-persistent-data lvm2
+yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+yum makecache fast
+yum list docker-ce.x86_64 --showduplicates | sort -r
+yum install docker-ce-18.06.3.ce-3.el7 -y
+systemctl start docker
+systemctl enable docker
+
+
 # 添加kubernetes 安装源为阿里源
 mv kubernetes.repo /etc/yum.repos.d/
 setenforce 0
 yum install -y kubelet kubeadm kubectl
 echo "you must restart your compute to make the change effect"
 
-
-
+# 添加 api server loadbalance 配置
+mkdir -p /etc/nginx
+mv nginx.conf /etc/nginx
+chmod +r /etc/nginx/nginx.conf
+mv nginx-proxy.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl start nginx-proxy
+systemctl enable nginx-proxy
+systemctl status nginx-proxy
