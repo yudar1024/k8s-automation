@@ -1,4 +1,5 @@
 #!/bin/bash
+yum install wget -y
 wget https://docs.projectcalico.org/v3.8/manifests/calico.yaml
 # 删除 CALICO_IPV4POOL_CIDR的下一行
 sed -i '/CALICO_IPV4POOL_CIDR/{n;d}' calico.yaml

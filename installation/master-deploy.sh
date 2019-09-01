@@ -30,6 +30,8 @@ sed -i '/dnsDomain: cluster.local/a\  podSubnet: "10.254.64.0/18"' kubeadm-init.
 sed -i 's?10.96.0.0/12?10.254.0.0/18?' kubeadm-init.yaml
 cat kubeadm-init.yaml
 kubeadm init --config kubeadm-init.yaml
+mkdir ~/.kube
+cp /etc/kubernetes/admin.conf ~/.kube/config
 
 
 
