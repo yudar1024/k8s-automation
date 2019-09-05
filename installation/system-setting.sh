@@ -54,18 +54,35 @@ echo "DefaultLimitMEMLOCK=infinity" >> /etc/systemd/system.conf
 
 # 加载ipvs 所需的内核模块
 touch /etc/sysconfig/modules/ipvs.modules
-echo "#!/bin/bash" >> /etc/sysconfig/modules/ipvs.modules
+echo '#!/bin/bash' >> /etc/sysconfig/modules/ipvs.modules
 echo "modprobe -- ip_vs" >> /etc/sysconfig/modules/ipvs.modules
 echo "modprobe -- ip_vs_rr" >> /etc/sysconfig/modules/ipvs.modules
 echo "modprobe -- ip_vs_wrr" >> /etc/sysconfig/modules/ipvs.modules
 echo "modprobe -- ip_vs_sh" >> /etc/sysconfig/modules/ipvs.modules
 echo "modprobe -- nf_conntrack_ipv4" >> /etc/sysconfig/modules/ipvs.modules
+
 # 授权
 chmod 755 /etc/sysconfig/modules/ipvs.modules 
+
 # 加载模块
 bash /etc/sysconfig/modules/ipvs.modules
+
 # 查看加载
 lsmod | grep -e ip_vs -e nf_conntrack_ipv4
+
+# 加载 glusterfs 所需的内核模块
+touch /etc/sysconfig/modules/glusterfs.modules
+echo '#!/bin/bash' >> /etc/sysconfig/modules/glusterfs.modules
+echo "modprobe -- dm_snapshot" >> /etc/sysconfig/modules/glusterfs.modules
+echo "modprobe -- dm_mirror" >> /etc/sysconfig/modules/glusterfs.modules
+echo "modprobe -- dm_thin_pool" >> /etc/sysconfig/modules/glusterfs.modules
+# 授权
+chmod 755 /etc/sysconfig/modules/glusterfs.modules 
+
+# 加载模块
+bash /etc/sysconfig/modules/glusterfs.modules
+
+lsmod | grep dm
 
 mkdir - /etc/docker
 touch /etc/docker/daemon.json
