@@ -1,6 +1,6 @@
 #!/bin/bash
-yum install -y heketi-client -y
 git clone https://github.com/yudar1024/gluster-kubernetes.git
+yum install -y heketi-client -y
 read -p 'do you want include master nodes in glusterfs cluster [Y]]es, [N]o? [Default: n]? ' choose
 # 如果没有显示的指定n/y 取默认值 n
 choose=${choose:-n}
