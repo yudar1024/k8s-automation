@@ -122,8 +122,9 @@ systemctl enable docker
 mv kubernetes.repo /etc/yum.repos.d/
 setenforce 0
 yum install -y kubelet kubeadm kubectl
-echo "you must restart your compute to make the change effect"
-
+yum install -y  bash-completion bash-completion-extras
+echo "source <(kubectl completion bash)" >> ~/.bashrc
+source <(kubectl completion bash)
 # 添加 api server loadbalance 配置
 mkdir -p /etc/nginx
 mv nginx.conf /etc/nginx
@@ -133,3 +134,4 @@ systemctl daemon-reload
 systemctl start nginx-proxy
 systemctl enable nginx-proxy
 systemctl status nginx-proxy
+echo "you must restart your compute to make the change effect"
