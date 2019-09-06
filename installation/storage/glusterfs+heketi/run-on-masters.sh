@@ -23,5 +23,6 @@ cp gluster-kubernetes/deploy/topology.json.sample gluster-kubernetes/deploy/topo
 sed -i 's/"key" : ""/"key" : "openstack"/g' gluster-kubernetes/deploy/topology.json
 echo ' please edit gluster-kubernetes/deploy/topology.json files then run "./gk-deploy -g -n glusterfs -c kubectl --admin-key openstack --user-key openstack -v" in  gluster-kubernetes/deploy folder'
 
-#$dd if=/dev/zero of=/dev/sdb bs=1k count=1
-#blockdev --rereadpt /dev/sdb
+# dd if=/dev/zero of=/dev/sdb bs=1k count=1
+# blockdev --rereadpt /dev/sdb
+# need reboot
