@@ -29,6 +29,7 @@ spec:
         - --target=Deployment/coredns
         # When cluster is using large nodes(with more cores), "coresPerReplica" should dominate.
         # If using small nodes, "nodesPerReplica" should dominate.
-        - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"min":1}}
+        - --default-params={"linear":{"nodesPerReplica":16,"min":1}}
+        # - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"min":1}}
         - --logtostderr=true
         - --v=2
