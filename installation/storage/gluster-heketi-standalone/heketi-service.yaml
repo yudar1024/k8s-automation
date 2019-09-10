@@ -1,0 +1,24 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: heketi-service
+spec:
+  ports:
+  - port: 8888
+    protocol: TCP
+    targetPort: 8888
+
+---
+kind: Endpoints
+apiVersion: v1
+metadata:
+  name: heketi-service
+subsets:
+- addresses:
+  - ip: 192.168.10.50
+  ports:
+  - port: 8888
+    protocol: TCP
+
+

@@ -9,5 +9,8 @@ ssh-copy-id -i /var/lib/heketi/id_rsa root@node2
 ssh-copy-id -i /var/lib/heketi/id_rsa root@node3
 systemctl start heketi
 systemctl enable heketi
-heketi-cli --user admin --secret openstack --server http://node1:8888 topology load --json /etc/heketi/topology.json
+export HEKETI_CLI_SERVER=http://192.168.10.50:8888
+#heketi-cli --user admin --secret openstack -s http://192.168.10.50:8888 topology load --json /etc/heketi/topology.json
+heketi-cli topology load --json=/etc/heketi/topology.json
+#alias heketi-cli='heketi-cli --server "http://192.168.10.50:8888" --user admin --secret openstack'
 
