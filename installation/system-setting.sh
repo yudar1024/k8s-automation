@@ -1,11 +1,29 @@
 #!/bin/bash 
 # 本脚本假设使用者已经装好了与K8S 相对应的docker
 # 在所有 master 节点与 node 节点执行
+# 此脚本需要与 nginx.conf kubernetes.repo nginx-proxy.service 三个文件在同一目录。
 if [ `whoami` != 'root' ]
 then
     echo 'you must run this script as root'
     exit 0
 fi
+
+if [ ! -f "./nginx.conf" ]; then
+echo "missing nginx.conf file, exit"
+exit 1
+fi
+
+if [ ! -f "./nginx-proxy.service" ]; then
+echo "missing nginx-proxy.service file, exit"
+exit 1
+fi
+
+
+if [ ! -f "./kubernetes.repo" ]; then
+echo "missing kubernetes.repo file, exit"
+exit 1
+fi
+
 
 # install neovim, this is optional
 yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
