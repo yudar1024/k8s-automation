@@ -26,8 +26,9 @@ echo "使用阿里镜像"
 sed -i "s?k8s.gcr.io?registry.cn-hangzhou.aliyuncs.com/google_containers?" kubeadm-init.yaml
 # 当sed的替换内容和被替换内容也包含/ \ 等字符时，可以使用? 代替原来sed 本身的/ 字符。https://www.cnblogs.com/linux-wangkun/p/5745584.html
 sed -i 's?imageRepository: k8s.gcr.io?imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers?' kubeadm-init.yaml
-sed -i '/dnsDomain: cluster.local/a\  podSubnet: "10.254.64.0/18"' kubeadm-init.yaml
-sed -i 's?10.96.0.0/12?10.254.0.0/18?' kubeadm-init.yaml
+ # 设置为10.244.0.0/16 是因为 canal 中 fannal 默认是这个网段， 可以查看 cannal.yaml 中的 net-conf.json 配置段
+sed -i '/dnsDomain: cluster.local/a\  podSubnet: "10.244.0.0/16"' kubeadm-init.yaml
+# sed -i 's?10.96.0.0/12?10.244.0.0/16?' kubeadm-init.yaml
 cat kubeadm-init.yaml
 kubeadm init --config kubeadm-init.yaml
 mkdir ~/.kube
