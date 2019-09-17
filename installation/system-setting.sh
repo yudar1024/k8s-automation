@@ -144,6 +144,7 @@ yum install -y  bash-completion bash-completion-extras
 echo "source <(kubectl completion bash)" >> ~/.bashrc
 source <(kubectl completion bash)
 # 添加 api server loadbalance 配置
+docker pull nginx:alpine
 mkdir -p /etc/nginx
 mv nginx.conf /etc/nginx
 chmod +r /etc/nginx/nginx.conf
