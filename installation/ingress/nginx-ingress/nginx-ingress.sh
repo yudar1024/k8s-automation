@@ -10,11 +10,14 @@ AddTolerations(){
     echo '# 添加部分内容' >> mandatory.yaml
     echo '      hostNetwork: true' >> mandatory.yaml
     echo '      affinity:  # 声明亲和性设置' >> mandatory.yaml
+    echo '        nodeAffinity: # 声明 为 Node 亲和性设置' >> mandatory.yaml
+    echo '          requiredDuringSchedulingIgnoredDuringExecution:  # 必须满足下面条件' >> mandatory.yaml
     echo '            nodeSelectorTerms: # 声明 为 Node 调度选择标签' >> mandatory.yaml
     echo '            - matchExpressions: # 设置node拥有的标签' >> mandatory.yaml
     echo '              - key: kubernetes.io/hostname  #  kubernetes内置标签' >> mandatory.yaml
     echo '                operator: In   # 操作符' >> mandatory.yaml
     echo '                values:        # 值,既集群 node 名称' >> mandatory.yaml
+# master1 要根据实际情况的值改动
     echo '                - master1' >> mandatory.yaml
     echo '        podAntiAffinity:  # 声明 为 Pod 亲和性设置' >> mandatory.yaml
     echo '          requiredDuringSchedulingIgnoredDuringExecution:  # 必须满足下面条件' >> mandatory.yaml
