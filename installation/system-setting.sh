@@ -32,6 +32,7 @@ sed -i 's/\r$//' kubernetes.repo
 
 # install vim, this is optional
 yum install -y vim
+yum install ipvsadm -y
 
 
 
