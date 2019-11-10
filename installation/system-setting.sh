@@ -2,6 +2,7 @@
 # 本脚本假设使用者已经装好了与K8S 相对应的docker
 # 在所有 master 节点与 node 节点执行
 # 此脚本需要与 nginx.conf kubernetes.repo nginx-proxy.service 三个文件在同一目录。
+# 脚本传输到linux 后，可能有crlf 问题，报错找不到文件或文件夹。 需要使用 sed -i 's/\r$//' system-setting.sh 处理一下换行符问题
 if [ `whoami` != 'root' ]
 then
     echo 'you must run this script as root'
@@ -24,10 +25,14 @@ echo "missing kubernetes.repo file, exit"
 exit 1
 fi
 
+# 预处理 crlf
+sed -i 's/\r$//' nginx.conf
+sed -i 's/\r$//' nginx-proxy.service
+sed -i 's/\r$//' kubernetes.repo
 
-# install neovim, this is optional
-yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-yum install -y neovim python3-neovim
+# install vim, this is optional
+yum install -y vim
+
 
 
 # close firewall
@@ -125,6 +130,11 @@ echo '    "http://f1361db2.m.daocloud.io",' >> /etc/docker/daemon.json
 echo '    "https://registry.docker-cn.com"' >> /etc/docker/daemon.json
 echo '  ]' >> /etc/docker/daemon.json
 echo '}' >> /etc/docker/daemon.json
+
+osversion=`rpm -q centos-release`
+if [[ "$osversion" =~ ^centos-release-8 ]]; then
+dnf install -y https://download.docker.com/linux/fedora/30/x86_64/stable/Packages/containerd.io-1.2.6-3.3.fc30.x86_64.rpm
+fi
 
 # 添加阿里docker安装源
 yum install -y yum-utils device-mapper-persistent-data lvm2
