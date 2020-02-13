@@ -33,8 +33,7 @@ sed -i 's/\r$//' kubernetes.repo
 # install vim, this is optional
 yum install -y vim
 yum install ipvsadm -y
-
-
+yum install bash-completion bash-completion-extras
 
 # close firewall
 systemctl stop firewalld

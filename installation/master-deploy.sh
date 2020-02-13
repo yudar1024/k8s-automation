@@ -33,6 +33,8 @@ cat kubeadm-init.yaml
 kubeadm init --config kubeadm-init.yaml
 mkdir ~/.kube
 cp /etc/kubernetes/admin.conf ~/.kube/config
+source <(kubectl completion bash)
+echo "source <(kubectl completion bash)"
 
 
 
