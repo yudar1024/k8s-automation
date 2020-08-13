@@ -142,15 +142,13 @@ echo '}' >> /etc/docker/daemon.json
 
 osversion=`rpm -q centos-release`
 if [[ "$osversion" =~ ^centos-release-8 ]]; then
-dnf install -y https://download.docker.com/linux/fedora/30/x86_64/stable/Packages/containerd.io-1.2.6-3.3.fc30.x86_64.rpm
+dnf install -y https://download.docker.com/linux/fedora/30/x86_64/stable/Packages/containerd.io-1.2.13-3.2.fc30.x86_64.rpm
 fi
 
 # 添加阿里docker安装源
-osversion=`rpm -q centos-release|cut -d- -f3 |cut -d. -f1`
+#osversion=`rpm -q centos-release|cut -d- -f3 |cut -d. -f1`
 if [ ! -f "/usr/lib/systemd/system/docker.service" ]; then 
-    if [ "$osversion" == "8" ]; then
-        dnf install https://download.docker.com/linux/fedora/30/x86_64/stable/Packages/containerd.io-1.2.13-3.2.fc30.x86_64.rpm
-    fi 
+
 yum install -y yum-utils device-mapper-persistent-data lvm2
 yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
 
