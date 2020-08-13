@@ -3,18 +3,21 @@
 # 在所有 master 节点与 node 节点执行
 # 此脚本需要与 nginx.conf kubernetes.repo nginx-proxy.service 三个文件在同一目录。
 # 脚本传输到linux 后，可能有crlf 问题，报错找不到文件或文件夹。 需要使用 sed -i 's/\r$//' system-setting.sh 处理一下换行符问题
+
+
 if [ `whoami` != 'root' ]
 then
     echo 'you must run this script as root'
     exit 0
 fi
+read -p "use lvscare or nginx as lb? 1 lvscare ,2 nginx:" lb
 
-if [ ! -f "./nginx.conf" ]; then
+if [ ! -f "./nginx.conf" ] && [$lb -eq 2]; then
 echo "missing nginx.conf file, exit"
 exit 1
 fi
 
-if [ ! -f "./nginx-proxy.service" ]; then
+if [ ! -f "./nginx-proxy.service" ] && [$lb -eq 2]; then
 echo "missing nginx-proxy.service file, exit"
 exit 1
 fi
@@ -59,6 +62,12 @@ echo "net.ipv4.ip_forward=1" >> /etc/sysctl.d/k8s.conf
 echo "net.bridge.bridge-nf-call-iptables=1" >> /etc/sysctl.d/k8s.conf
 echo "net.bridge.bridge-nf-call-ip6tables=1" >> /etc/sysctl.d/k8s.conf
 echo "vm.swappiness=0" >> /etc/sysctl.d/k8s.conf
+echo "net.netfilter.nf_conntrack_max=1048576" >> /etc/sysctl.d/k8s.conf
+echo "net.nf_conntrack_max=1048576" >> /etc/sysctl.d/k8s.conf
+# 当数据包超长时，不丢弃数据包。K8S重要
+echo "net.netfilter.nf_conntrack_tcp_be_liberal=1" >> /etc/sysctl.d/k8s.conf
+touch /etc/modprobe.d/nf_conntrack.conf
+echo "options nf_conntrack hashsize=262144" > /etc/modprobe.d/nf_conntrack.conf
 # 生效
 sysctl -p /etc/sysctl.d/k8s.conf
 
@@ -137,14 +146,20 @@ dnf install -y https://download.docker.com/linux/fedora/30/x86_64/stable/Package
 fi
 
 # 添加阿里docker安装源
+osversion=`rpm -q centos-release|cut -d- -f3 |cut -d. -f1`
+if [ ! -f "/usr/lib/systemd/system/docker.service" ]; then 
+    if [ "$osversion" == "8" ]; then
+        dnf install https://download.docker.com/linux/fedora/30/x86_64/stable/Packages/containerd.io-1.2.13-3.2.fc30.x86_64.rpm
+    fi 
 yum install -y yum-utils device-mapper-persistent-data lvm2
 yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+
 yum makecache fast
 yum list docker-ce.x86_64 --showduplicates | sort -r
-yum install docker-ce-18.06.3.ce-3.el7 -y
+yum install docker-ce -y
 systemctl start docker
 systemctl enable docker
-
+fi
 
 # 添加kubernetes 安装源为阿里源
 mv kubernetes.repo /etc/yum.repos.d/
@@ -154,13 +169,20 @@ yum install -y  bash-completion bash-completion-extras
 echo "source <(kubectl completion bash)" >> ~/.bashrc
 source <(kubectl completion bash)
 # 添加 api server loadbalance 配置
-docker pull nginx:alpine
-mkdir -p /etc/nginx
-mv nginx.conf /etc/nginx
-chmod +r /etc/nginx/nginx.conf
-mv nginx-proxy.service /etc/systemd/system/
-systemctl daemon-reload
-systemctl start nginx-proxy
-systemctl enable nginx-proxy
-systemctl status nginx-proxy
+if [ "$lb" -eq 1 ];then
+        echo "use lvscare as lb of master"
+        docker pull fanux/lvscare:v1.0.1
+else
+        echo "use nginx as lb of master"
+        docker pull nginx:alpine
+        mkdir -p /etc/nginx
+        mv nginx.conf /etc/nginx
+        chmod +r /etc/nginx/nginx.conf
+        mv nginx-proxy.service /etc/systemd/system/
+        systemctl daemon-reload
+        systemctl start nginx-proxy
+        systemctl enable nginx-proxy
+        systemctl status nginx-proxy
+fi
+
 echo "you must restart your compute to make the change effect"
