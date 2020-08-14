@@ -57,19 +57,62 @@ sed -i "s/^SELINUX=permissive/SELINUX=disabled/g" /etc/sysconfig/selinux
 sed -i "s/^SELINUX=permissive/SELINUX=disabled/g" /etc/selinux/config
 
 # 修改内核参数, 默认内核配置参数在/etc/sysctl.conf
+touch /etc/sysctl.d/docker.conf
+echo "net.ipv4.ip_forward=1" >> /etc/sysctl.d/docker.conf
+echo "net.bridge.bridge-nf-call-iptables=1" >> /etc/sysctl.d/docker.conf
+echo "net.bridge.bridge-nf-call-ip6tables=1" >> /etc/sysctl.d/docker.conf
+echo "net.bridge.bridge-nf-call-arptables = 1" >> /etc/sysctl.d/docker.conf
+echo "vm.swappiness=0" >> /etc/sysctl.d/docker.conf
 touch /etc/sysctl.d/k8s.conf
-echo "net.ipv4.ip_forward=1" >> /etc/sysctl.d/k8s.conf
-echo "net.bridge.bridge-nf-call-iptables=1" >> /etc/sysctl.d/k8s.conf
-echo "net.bridge.bridge-nf-call-ip6tables=1" >> /etc/sysctl.d/k8s.conf
-echo "vm.swappiness=0" >> /etc/sysctl.d/k8s.conf
-echo "net.netfilter.nf_conntrack_max=1048576" >> /etc/sysctl.d/k8s.conf
-echo "net.nf_conntrack_max=1048576" >> /etc/sysctl.d/k8s.conf
+echo "# conntrack 连接跟踪数最大数量，是在内核内存中 netfilter 可以同时处理的“任务”（连接跟踪条目）" >> /etc/sysctl.d/k8s.conf
+echo "net.netfilter.nf_conntrack_max = 10485760" >> /etc/sysctl.d/k8s.conf
+echo "net.netfilter.nf_conntrack_tcp_timeout_established=300" >> /etc/sysctl.d/k8s.conf
+#echo "net.nf_conntrack_max=1048576" >> /etc/sysctl.d/k8s.conf
+echo "# 每个网络接口接收数据包的速率比内核处理这些包的速率快时，允许送到队列的数据包的最大数目" >> /etc/sysctl.d/k8s.conf
+echo "net.core.netdev_max_backlog = 10000" >> /etc/sysctl.d/k8s.conf
+echo "# 存在于 ARP 高速缓存中的最少层数，如果少于这个数，垃圾收集器将不会运行。缺省值是 128" >> /etc/sysctl.d/k8s.conf
+echo "net.ipv4.neigh.default.gc_thresh1 = 80000" >> /etc/sysctl.d/k8s.conf
+echo "# 保存在 ARP 高速缓存中的最多的记录软限制。垃圾收集器在开始收集前，允许记录数超过这个数字 5 秒。缺省值是 512" >> /etc/sysctl.d/k8s.conf
+echo "net.ipv4.neigh.default.gc_thresh2 = 90000" >> /etc/sysctl.d/k8s.conf
+echo "# 保存在 ARP 高速缓存中的最多记录的硬限制，一旦高速缓存中的数目高于此，垃圾收集器将马上运行。缺省值是 1024" >> /etc/sysctl.d/k8s.conf
+echo "net.ipv4.neigh.default.gc_thresh3 = 100000" >> /etc/sysctl.d/k8s.conf
+echo "#  哈希表大小（只读）（64位系统、8G内存默认 65536，16G翻倍，如此类推）" >> /etc/sysctl.d/k8s.conf
+echo "net.netfilter.nf_conntrack_buckets=655360" >> /etc/sysctl.d/k8s.conf
+# max-file 表示系统级别的能够打开的文件句柄的数量， 一般如果遇到文件句柄达到上限时，会碰到
+# "Too many open files" 或者 Socket/File: Can’t open so many files 等错误
+# echo "fs.file-max=1000000" >> /etc/sysctl.d/k8s.conf
 # 当数据包超长时，不丢弃数据包。K8S重要
 echo "net.netfilter.nf_conntrack_tcp_be_liberal=1" >> /etc/sysctl.d/k8s.conf
-touch /etc/modprobe.d/nf_conntrack.conf
-echo "options nf_conntrack hashsize=262144" > /etc/modprobe.d/nf_conntrack.conf
+# 表示socket监听(listen)的backlog上限，也就是就是socket的监听队列(accept queue)，当一个tcp连接尚未被处理或建立时(半连接状态)，会保存在这个监听队列，默认为 128，在高并发场景下偏小，优化到 32768。参考 https://imroc.io/posts/kubernetes-overflow-and-drop/
+echo "net.core.somaxconn=32768" >> /etc/sysctl.d/k8s.conf
+# 默认值: 128 指定了每一个 real user ID 可创建的 inotify instatnces 的数量上限
+echo "fs.inotify.max_user_instances=524288" >> /etc/sysctl.d/k8s.conf
+# 表示同一用户同时可以添加的watch数目（watch一般是针对目录，决定了同时同一用户可以监控的目录数量) 默认值 8192 在容器场景下偏小，在某些情况下可能会导致 inotify watch 数量耗尽，使得创建 Pod 不成功或者 kubelet 无法启动成功，将其优化到 524288
+echo "fs.inotify.max_user_watches=524288" >> /etc/sysctl.d/k8s.conf
+# 没有启用syncookies的情况下，syn queue(半连接队列)大小除了受somaxconn限制外，也受这个参数的限制，默认1024，优化到8096，避免在高并发场景下丢包
+echo "net.ipv4.tcp_max_syn_backlog=8096" >> /etc/sysctl.d/k8s.conf
+# max-file 表示系统级别的能够打开的文件句柄的数量， 一般如果遇到文件句柄达到上限时，会碰到
+# Too many open files 或者 Socket/File: Can’t open so many files 等错误
+#fs.file-max=2097152
+echo "net.core.bpf_jit_enable=1" >> /etc/sysctl.d/k8s.conf
+echo "net.core.bpf_jit_harden=1" >> /etc/sysctl.d/k8s.conf
+echo "net.core.bpf_jit_kallsyms=1" >> /etc/sysctl.d/k8s.conf
+echo "net.core.dev_weight_tx_bias=1" >> /etc/sysctl.d/k8s.conf
+echo "net.core.rmem_max=16777216" >> /etc/sysctl.d/k8s.conf
+echo "net.core.wmem_max=16777216" >> /etc/sysctl.d/k8s.conf
+echo "net.ipv4.tcp_rmem=4096 12582912 16777216" >> /etc/sysctl.d/k8s.conf
+echo "net.ipv4.tcp_wmem=4096 12582912 16777216" >> /etc/sysctl.d/k8s.conf
+echo "net.core.rps_sock_flow_entries=8192" >> /etc/sysctl.d/k8s.conf
+echo "net.ipv4.tcp_max_orphans=32768" >> /etc/sysctl.d/k8s.conf
+echo "net.ipv4.tcp_max_tw_buckets=32768" >> /etc/sysctl.d/k8s.conf
+echo "vm.max_map_count=262144" >> /etc/sysctl.d/k8s.conf
+echo "kernel.threads-max=30058" >> /etc/sysctl.d/k8s.conf
+# 避免发生故障时没有 coredump
+echo "kernel.core_pattern=core" >> /etc/sysctl.d/k8s.conf
+#touch /etc/modprobe.d/nf_conntrack.conf
+#echo "options nf_conntrack hashsize=655360" > /etc/modprobe.d/nf_conntrack.conf
 # 生效
-sysctl -p /etc/sysctl.d/k8s.conf
+sysctl --system
 
 # 调高 ulimit 最大文件打开数量，systemclt 管理服务文件的最大数量
 touch /etc/security/limits.d/k8slimits.conf
@@ -142,7 +185,7 @@ echo '}' >> /etc/docker/daemon.json
 
 osversion=`rpm -q centos-release`
 if [[ "$osversion" =~ ^centos-release-8 ]]; then
-dnf install -y https://download.docker.com/linux/fedora/30/x86_64/stable/Packages/containerd.io-1.2.13-3.2.fc30.x86_64.rpm
+yum install -y https://download.docker.com/linux/fedora/30/x86_64/stable/Packages/containerd.io-1.2.13-3.2.fc30.x86_64.rpm
 fi
 
 # 添加阿里docker安装源
@@ -169,6 +212,7 @@ source <(kubectl completion bash)
 # 添加 api server loadbalance 配置
 if [ "$lb" -eq 1 ];then
         echo "use lvscare as lb of master"
+        echo "10.103.97.2 apiserver.cluster.local" >> /etc/hosts   # using vip
         docker pull fanux/lvscare:v1.0.1
 else
         echo "use nginx as lb of master"
