@@ -34,9 +34,8 @@ sed -i 's/\r$//' nginx-proxy.service
 sed -i 's/\r$//' kubernetes.repo
 
 # install vim, this is optional
-yum install -y vim
-yum install ipvsadm -y
-yum install bash-completion bash-completion-extras
+yum install -y vim ipvsadm ipset bash-completion bash-completion-extras
+
 
 # close firewall
 systemctl stop firewalld
@@ -158,6 +157,22 @@ chmod 755 /etc/sysconfig/modules/glusterfs.modules
 bash /etc/sysconfig/modules/glusterfs.modules
 
 lsmod | grep dm
+
+
+# 重启加载内核模块
+touch /etc/modules-load.d/k8s.conf
+cat > /etc/modules-load.d/k8s.conf <<EOF
+# Load ip_vs at boot
+ip_vs
+ip_vs_rr
+ip_vs_wrr
+ip_vs_sh
+nf_conntrack_ipv4
+dm_snapshot
+dm_mirror
+dm_thin_pool
+dummy
+EOF
 
 mkdir - /etc/docker
 touch /etc/docker/daemon.json
