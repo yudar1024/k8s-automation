@@ -12,12 +12,12 @@ then
 fi
 read -p "use lvscare or nginx as lb? 1 lvscare ,2 nginx:" lb
 
-if [ ! -f "./nginx.conf" ] && [$lb -eq 2]; then
+if [ ! -f "./nginx.conf" ] && ["$lb" -eq 2]; then
 echo "missing nginx.conf file, exit"
 exit 1
 fi
 
-if [ ! -f "./nginx-proxy.service" ] && [$lb -eq 2]; then
+if [ ! -f "./nginx-proxy.service" ] && ["$lb" -eq 2]; then
 echo "missing nginx-proxy.service file, exit"
 exit 1
 fi
@@ -228,6 +228,7 @@ source <(kubectl completion bash)
 if [ "$lb" -eq 1 ];then
         echo "use lvscare as lb of master"
         echo "10.103.97.2 apiserver.cluster.local" >> /etc/hosts   # using vip
+        # docker pull fanux/lvscare:v1.0.1
         docker pull fanux/lvscare:v1.0.1
 else
         echo "use nginx as lb of master"
