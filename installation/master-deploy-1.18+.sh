@@ -53,7 +53,7 @@ if ["$lb" -eq 2]; then
   sed -i '/clusterName: kubernetes/a\controlPlaneEndpoint: "127.0.0.1:6443"' kubeadm-init.yaml
 elif ["$lb" -eq 1];then 
   sed -i '/clusterName: kubernetes/a\controlPlaneEndpoint: "apiserver.cluster.local:6443"' kubeadm-init.yaml
-  echo '192.168.106.130 apiserver.cluster.local' >> /etc/hosts
+  echo "$ip apiserver.cluster.local" >> /etc/hosts
 fi
 echo 'k8s version'
 sed -i '/kubernetesVersion/d' kubeadm-init.yaml
@@ -109,19 +109,23 @@ cat > cm.yml <<EOF
   extraArgs:
     experimental-cluster-signing-duration: 876000h
 EOF
-sed -i 's/controllerManager: {}/controllerManager: /' kubeadm-init.yml
+sed -i 's/{}//' kubeadm-init.yaml
 sed -i '/controllerManager:/r cm.yml' kubeadm-init.yaml
 rm -f cm.yml
 echo "*************************** 设置证书时间完毕"
 
 # sed -i 's?10.96.0.0/12?10.244.0.0/16?' kubeadm-init.yaml
 cat kubeadm-init.yaml
+read -p "do you want to install now ? 1 yes ,2 no:" run
+if [ "$run" -eq 1 ]; then 
 kubeadm init --config kubeadm-init.yaml --upload-certs
 mkdir ~/.kube
 cp /etc/kubernetes/admin.conf ~/.kube/config
 source <(kubectl completion bash)
 echo "source <(kubectl completion bash)"
-
+else
+echo 'you can run "kubeadm init --config kubeadm-init.yaml --upload-certs" later'
+fi
 
 
 
