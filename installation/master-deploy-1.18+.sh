@@ -1,5 +1,11 @@
 #!/bin/bash
 
+
+if [ "$#" == 0 ]; then 
+echo "please indecate master nodes ip. exmaple: bash master-deploy-1.18+.sh 192.168.106.128 192.168.106.129 192.168.106.130"
+exit 1
+fi
+
 if [ ! -f "./audit-policy.yaml" ]; then
 echo "missing audit-policy.yaml file, exit"
 exit 1
@@ -78,7 +84,11 @@ cat > apiserver.yml <<EOF
   - 127.0.0.1
   - apiserver.cluster.local #lvscare 所用的域名
   - $ip
-  - 192.168.106.129
+$(for arg in $*
+  do
+echo "  - $arg"
+  done
+  )
   - 10.103.97.2 # VIP
   extraArgs:
     # 审计日志相关配置
