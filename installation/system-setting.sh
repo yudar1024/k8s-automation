@@ -13,12 +13,12 @@ fi
 
 read -p "use lvscare or nginx as lb? 1 lvscare ,2 nginx:" lb
 
-if [ ! -f "./nginx.conf" ] && [ "$lb" -eq 2 ]; then
+if  [ "$lb" -eq 2 ] && [ ! -f "./nginx.conf" ]; then
 echo "missing nginx.conf file, exit"
 exit 1
 fi
 
-if [ ! -f "./nginx-proxy.service" ] && [ "$lb" -eq 2 ]; then
+if [ "$lb" -eq 2 ] && [ ! -f "./nginx-proxy.service" ]; then
 echo "missing nginx-proxy.service file, exit"
 exit 1
 fi
@@ -35,7 +35,7 @@ sed -i 's/\r$//' nginx-proxy.service
 sed -i 's/\r$//' kubernetes.repo
 
 # install vim, this is optional
-yum install -y vim ipvsadm ipset iproute-tc bash-completion bash-completion-extras
+yum install -y vim ipvsadm ipset tc bash-completion bash-completion-extras
 
 
 # close firewall
@@ -162,19 +162,19 @@ lsmod | grep dm
 
 
 # 重启加载内核模块
-touch /etc/modules-load.d/k8s.conf
-cat > /etc/modules-load.d/k8s.conf <<EOF
-# Load ip_vs at boot
-ip_vs
-ip_vs_rr
-ip_vs_wrr
-ip_vs_sh
-nf_conntrack_ipv4
-dm_snapshot
-dm_mirror
-dm_thin_pool
-dummy
-EOF
+# touch /etc/modules-load.d/k8s.conf
+# cat > /etc/modules-load.d/k8s.conf <<EOF
+# # Load ip_vs at boot
+# ip_vs
+# ip_vs_rr
+# ip_vs_wrr
+# ip_vs_sh
+# nf_conntrack_ipv4
+# dm_snapshot
+# dm_mirror
+# dm_thin_pool
+# dummy
+# EOF
 
 mkdir - /etc/docker
 
@@ -229,7 +229,7 @@ source <(kubectl completion bash)
 # 添加 api server loadbalance 配置
 if [ "$lb" -eq 1 ];then
         echo "use lvscare as lb of master"
-        echo "10.103.97.2 apiserver.cluster.local" >> /etc/hosts   # using vip
+        echo "10.103.97.2   apiserver.cluster.local" >> /etc/hosts   # using vip
         # docker pull fanux/lvscare:v1.0.1
         docker pull fanux/lvscare:v1.0.1
 else
