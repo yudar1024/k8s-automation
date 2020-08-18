@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 if [ "$#" == 0 ]; then 
 echo "please indecate master nodes ip. exmaple: bash master-deploy-1.18+.sh 192.168.106.128 192.168.106.129 192.168.106.130"
 exit 1
@@ -55,11 +54,15 @@ echo '替换 kubeadm apiserver 地址'
 #此处为apiserver 实际的IP地址
 sed -i "s/advertiseAddress: 1.2.3.4/advertiseAddress: $ip/g" kubeadm-init.yaml
 if ["$lb" -eq 2]; then
-#此处为访问APIserver的请求地址
+#此处为访问APIserver的请求地址 for nginx lb
   sed -i '/clusterName: kubernetes/a\controlPlaneEndpoint: "127.0.0.1:6443"' kubeadm-init.yaml
 elif ["$lb" -eq 1];then 
+#此处为访问APIserver的请求地址 for lvscare lb
   sed -i '/clusterName: kubernetes/a\controlPlaneEndpoint: "apiserver.cluster.local:6443"' kubeadm-init.yaml
-  echo "$ip apiserver.cluster.local" >> /etc/hosts
+  host=$(cat /etc/hosts | grep apiserver.cluster.local)
+  if [ "$host" == "" ]; then 
+    echo "$ip apiserver.cluster.local" >> /etc/hosts
+  fi
 fi
 echo 'k8s version'
 sed -i '/kubernetesVersion/d' kubeadm-init.yaml
@@ -83,32 +86,31 @@ cat > apiserver.yml <<EOF
   certSANs:
   - 127.0.0.1
   - apiserver.cluster.local #lvscare 所用的域名
-  - $ip
 $(for arg in $*
   do
 echo "  - $arg"
   done
   )
   - 10.103.97.2 # VIP
-  extraArgs:
-    # 审计日志相关配置
-    audit-log-maxage: "20"
-    audit-log-maxbackup: "10"
-    audit-log-maxsize: "100"
-    audit-log-path: "/var/log/kube-audit/audit.log"
-    audit-policy-file: "/etc/kubernetes/audit-policy.yaml"
-    audit-log-format: json
-  # 开启审计日志配置, 所以需要将宿主机上的审计配置
-  extraVolumes:
-  - name: "audit-config"
-    hostPath: "/etc/kubernetes/audit-policy.yaml"
-    mountPath: "/etc/kubernetes/audit-policy.yaml"
-    readOnly: true
-    pathType: "File"
-  - name: "audit-log"
-    hostPath: "/var/log/kube-audit"
-    mountPath: "/var/log/kube-audit"
-    pathType: "DirectoryOrCreate"
+#  extraArgs:
+#    # 审计日志相关配置
+#    audit-log-maxage: "20"
+#    audit-log-maxbackup: "10"
+#    audit-log-maxsize: "100"
+#    audit-log-path: "/var/log/kube-audit/audit.log"
+#    audit-policy-file: "/etc/kubernetes/audit-policy.yaml"
+#    audit-log-format: json
+#  # 开启审计日志配置, 所以需要将宿主机上的审计配置
+#  extraVolumes:
+#  - name: "audit-config"
+#    hostPath: "/etc/kubernetes/audit-policy.yaml"
+#    mountPath: "/etc/kubernetes/audit-policy.yaml"
+#    readOnly: true
+#    pathType: "File"
+#  - name: "audit-log"
+#    hostPath: "/var/log/kube-audit"
+#    mountPath: "/var/log/kube-audit"
+#    pathType: "DirectoryOrCreate"
 EOF
 sed -i '/apiServer:/r apiserver.yml' kubeadm-init.yaml
 rm -f audit.yml
