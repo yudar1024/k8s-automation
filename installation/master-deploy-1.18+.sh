@@ -53,6 +53,7 @@ echo "############ 设置 controlPlaneEndpoint "
   sed -i '/clusterName: kubernetes/a\controlPlaneEndpoint: "apiserver.cluster.local:6443"' kubeadm-init.yaml
   host=$(cat /etc/hosts | grep apiserver.cluster.local)
   if [ "$host" == "" ]; then 
+    echo "将 $host_ip apiserver.cluster.local 写入 /etc/hosts "
     echo "$host_ip   apiserver.cluster.local" >> /etc/hosts
   fi
 fi
@@ -125,13 +126,13 @@ echo "*************************** 设置证书时间完毕"
 cat kubeadm-init.yaml
 read -p "do you want to install now ? 1 yes ,2 no:" run
 if [ "$run" -eq 1 ]; then 
-kubeadm init --config kubeadm-init.yaml --upload-certs
+kubeadm init --config kubeadm-init.yaml --upload-certs --v=5
 mkdir ~/.kube
 cp /etc/kubernetes/admin.conf ~/.kube/config
 source <(kubectl completion bash)
 echo "source <(kubectl completion bash)"
 else
-echo 'you can run "kubeadm init --config kubeadm-init.yaml --upload-certs" later'
+echo 'you can run "kubeadm init --config kubeadm-init.yaml --upload-certs --v=5" later'
 fi
 
 
