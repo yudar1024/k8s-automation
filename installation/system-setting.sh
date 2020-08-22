@@ -35,7 +35,7 @@ sed -i 's/\r$//' nginx-proxy.service
 sed -i 's/\r$//' kubernetes.repo
 
 # install vim, this is optional
-yum install -y vim ipvsadm ipset tc bash-completion bash-completion-extras
+yum install -y vim ipvsadm ipset tc bash-completion
 
 
 # close firewall
