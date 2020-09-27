@@ -219,17 +219,17 @@ fi
 # 添加kubernetes 安装源为阿里源
 mv kubernetes.repo /etc/yum.repos.d/
 setenforce 0
-yum install -y kubelet-1.18.0 kubeadm-1.18.0 kubectl-1.18.0
+yum install -y kubelet-1.19.2 kubeadm-1.19.2 kubectl-1.19.2
 echo "source <(kubectl completion bash)" >> ~/.bashrc
 source <(kubectl completion bash)
 # 添加 api server loadbalance 配置
 if [ "$lb" -eq 1 ];then
         echo "use lvscare as lb of master"
         if [ "$nodetype" -eq 2 ];then
-          echo "10.103.97.2   apiserver.cluster.local" >> /etc/hosts  只有node节点裁需要这个 # using vip
+          echo "10.103.97.2   apiserver.cluster.local" >> /etc/hosts  #只有node节点裁需要这个  using vip
         fi
         # docker pull fanux/lvscare:v1.0.1
-        docker pull fanux/lvscare:v1.0.1
+        docker pull fanux/lvscare:latest
 else
         echo "use nginx as lb of master"
         docker pull nginx:alpine
