@@ -180,6 +180,7 @@ cat>/etc/docker/daemon.json<<EOF
   "bip": "172.17.0.1/16",
   "exec-opts": ["native.cgroupdriver=systemd"],
   "registry-mirrors": ["https://fmu2ap2k.mirror.aliyuncs.com","https://gcr-mirror.qiniu.com","https://quay-mirror.qiniu.com"],
+  "data-root": "/var/lib/docker",
   "storage-driver": "overlay2",
   "storage-opts": [
     "overlay2.override_kernel_check=true"
