@@ -63,6 +63,8 @@ echo "net.bridge.bridge-nf-call-iptables=1" >> /etc/sysctl.d/docker.conf
 echo "net.bridge.bridge-nf-call-ip6tables=1" >> /etc/sysctl.d/docker.conf
 echo "net.bridge.bridge-nf-call-arptables = 1" >> /etc/sysctl.d/docker.conf
 echo "vm.swappiness=0" >> /etc/sysctl.d/docker.conf
+
+
 cat<<EOF > /etc/sysctl.d/kubernetes.conf
 # conntrack 连接跟踪数最大数量，是在内核内存中 netfilter 可以同时处理的“任务”（连接跟踪条目）
 net.netfilter.nf_conntrack_max = 10485760
@@ -133,6 +135,8 @@ echo "modprobe -- ip_vs_rr" >> /etc/sysconfig/modules/ipvs.modules
 echo "modprobe -- ip_vs_wrr" >> /etc/sysconfig/modules/ipvs.modules
 echo "modprobe -- ip_vs_sh" >> /etc/sysconfig/modules/ipvs.modules
 echo "modprobe -- nf_conntrack_ipv4" >> /etc/sysconfig/modules/ipvs.modules
+# [ERROR FileContent--proc-sys-net-bridge-bridge-nf-call-iptables]: /proc/sys/net/bridge/bridge-nf-call-iptables does not exist 没有加载 br_netfilter 内核模块会报这个错。
+echo "modprobe -- br_netfilter" >> /etc/sysconfig/modules/ipvs.modules
 
 # 授权
 chmod 755 /etc/sysconfig/modules/ipvs.modules 
@@ -154,7 +158,7 @@ chmod 755 /etc/sysconfig/modules/glusterfs.modules
 
 # 加载模块
 bash /etc/sysconfig/modules/glusterfs.modules
-
+echo "1" >/proc/sys/net/bridge/bridge-nf-call-iptables 
 lsmod | grep dm
 
 
@@ -167,6 +171,7 @@ lsmod | grep dm
 # ip_vs_wrr
 # ip_vs_sh
 # nf_conntrack_ipv4
+# br_netfilter
 # dm_snapshot
 # dm_mirror
 # dm_thin_pool

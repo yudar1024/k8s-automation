@@ -126,6 +126,7 @@ echo "*************************** 设置证书时间完毕"
 cat kubeadm-init.yaml
 read -p "do you want to install now ? 1 yes ,2 no:" run
 if [ "$run" -eq 1 ]; then 
+systemctl enable kubelet
 kubeadm init --config kubeadm-init.yaml --upload-certs --v=5
 mkdir ~/.kube
 cp /etc/kubernetes/admin.conf ~/.kube/config
