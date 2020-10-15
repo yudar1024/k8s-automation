@@ -8,13 +8,25 @@
 if [ `whoami` != 'root' ]
 then
     echo 'you must run this script as root'
-    exit 0
+    exit 1
 fi
 
 read -p "use lvscare or nginx as lb? 1 lvscare ,2 nginx:" lb
+if [ "$lb" = "" ];then
+echo "you must choose a lb type"
+exit 1
+fi
 read -p "which type of this node is, 1 master, 2 node ? please input 1 or 2 " nodetype
-read -p "please input the version of kubernetes? eg 1.19.2. " k8s_version
+if [ "$nodetype" = "" ];then
+echo "you must choose a nodetype type"
+exit 0
+fi
+read -p "please input the version of kubernetes? eg 1.19.2 " k8s_version
+k8s_version=${k8s_version:-1.18.8}
+echo "now will install k8s version $k8s_version"
 read -p "please input the version of docker? eg 19.03 " docker_version
+docker_version=${docker_version:-19.03}
+echo "now will install docker version $docker_version"
 if  [ "$lb" -eq 2 ] && [ ! -f "./nginx.conf" ]; then
 echo "missing nginx.conf file, exit"
 exit 1
@@ -258,4 +270,4 @@ else
         systemctl status nginx-proxy
 fi
 
-echo "you must restart your compute to make the change effect"
+echo "!!!! you must restart your compute to make the change effect !!!!"
