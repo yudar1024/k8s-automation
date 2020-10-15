@@ -63,7 +63,7 @@ sed -i 's/.*swap.*/#&/' /etc/fstab
 # 设置/etc/hosts中的 机器名与ip 的映射，如果不设置 kube-controller-manager 无法正常启动。
 host_ip=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | awk -F"/" '{print $1}'`
 host_name=`hostname`
-echo "$host_ip $host_name"
+echo "$host_ip $host_name" >> /etc/hosts
 # 关闭selinux
 setenforce 0
 # 永久关闭
