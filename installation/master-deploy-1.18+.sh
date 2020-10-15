@@ -45,7 +45,7 @@ echo '替换 kubeadm apiserver 地址'
 sed -i "s/advertiseAddress: 1.2.3.4/advertiseAddress: $host_ip/g" kubeadm-init.yaml
 if [ "$lb" -eq 2 ]; then
 #此处为访问APIserver的请求地址 for nginx lb
-  sed -i '/clusterName: kubernetes/a\controlPlaneEndpoint: "127.0.0.1:6443"' kubeadm-init.yaml
+  sed -i '/clusterName: kubernetes/a\controlPlaneEndpoint: "127.0.0.1:9443"' kubeadm-init.yaml
 elif [ "$lb" -eq 1 ]; then 
 echo "############ 设置 controlPlaneEndpoint "
 #此处为访问APIserver的请求地址 for lvscare lb
@@ -115,7 +115,8 @@ echo "########################### 开始设置证书时间"
 #设置证书时间为100年
 cat > cm.yml <<EOF
   extraArgs:
-    experimental-cluster-signing-duration: 876000h
+    experimental-cluster-signing-duration: 876000h # only for version 1.18
+    cluster-signing-duration: 876000h # when version > 1.19
 EOF
 sed -i 's/{}//' kubeadm-init.yaml
 sed -i '/controllerManager:/r cm.yml' kubeadm-init.yaml

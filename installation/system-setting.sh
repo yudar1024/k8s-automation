@@ -13,6 +13,8 @@ fi
 
 read -p "use lvscare or nginx as lb? 1 lvscare ,2 nginx:" lb
 read -p "which type of this node is, 1 master, 2 node ? please input 1 or 2 " nodetype
+read -p "please input the version of kubernetes? eg 1.19.2. " k8s_version
+read -p "please input the version of docker? eg 19.03 " docker_version
 if  [ "$lb" -eq 2 ] && [ ! -f "./nginx.conf" ]; then
 echo "missing nginx.conf file, exit"
 exit 1
@@ -208,8 +210,16 @@ fi
 # 添加阿里docker安装源
 #osversion=`rpm -q centos-release|cut -d- -f3 |cut -d. -f1`
 if [ ! -f "/usr/lib/systemd/system/docker.service" ]; then 
-export VERSION=19.03
-curl -fsSL "https://get.docker.com/" | bash -s -- --mirror Aliyun
+echo "############### begin instll docker #############################"
+
+yum install -y yum-utils device-mapper-persistent-data lvm2
+yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+yum makecache fast
+yum list docker-ce.x86_64 --showduplicates | sort -r
+VERSION=` yum list docker-ce.x86_64 --showduplicates | grep $docker_version | sort -r -V | awk 'NR==1{print($2)}'`
+yum -y install "docker-ce-$VERSION"
+#export VERSION=19.03
+#curl -fsSL "https://get.docker.com/" | bash -s -- --mirror Aliyun
 
 # yum install -y yum-utils device-mapper-persistent-data lvm2
 # yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
@@ -224,7 +234,7 @@ fi
 # 添加kubernetes 安装源为阿里源
 mv kubernetes.repo /etc/yum.repos.d/
 setenforce 0
-yum install -y kubelet-1.19.2 kubeadm-1.19.2 kubectl-1.19.2
+yum install -y "kubelet-$k8s_version" "kubeadm-$k8s_version" "kubectl-$k8s_version"
 echo "source <(kubectl completion bash)" >> ~/.bashrc
 source <(kubectl completion bash)
 # 添加 api server loadbalance 配置
