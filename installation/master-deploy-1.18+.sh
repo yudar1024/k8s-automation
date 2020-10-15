@@ -79,7 +79,7 @@ echo "########################### 开始设置API SERVER 访问域名与审计"
 mkdir -p /etc/kubernetes
 mkdir -p /var/log/kube-audit
 cp audit-policy.yaml /etc/kubernetes/audit-policy.yaml
-
+if [ "$lb" -eq 1 ]; then
 cat > apiserver.yml <<EOF
   # apiserver相关配置
   # 添加所有的MASTER 以及预留的MASTER IP
@@ -112,6 +112,31 @@ echo "  - $arg"
     mountPath: "/var/log/kube-audit"
     pathType: "DirectoryOrCreate"
 EOF
+fi
+
+if [ "$lb" -eq 2 ]; then
+cat > apiserver.yml <<EOF
+  extraArgs:
+    # 审计日志相关配置
+    audit-log-maxage: "20"
+    audit-log-maxbackup: "10"
+    audit-log-maxsize: "100"
+    audit-log-path: "/var/log/kube-audit/kube-audit.log"
+    audit-policy-file: "/etc/kubernetes/audit-policy.yaml"
+    audit-log-format: json
+  # 开启审计日志配置, 所以需要将宿主机上的审计配置
+  extraVolumes:
+  - name: "audit-config"
+    hostPath: "/etc/kubernetes/audit-policy.yaml"
+    mountPath: "/etc/kubernetes/audit-policy.yaml"
+    readOnly: true
+    pathType: "File"
+  - name: "audit-log"
+    hostPath: "/var/log/kube-audit"
+    mountPath: "/var/log/kube-audit"
+    pathType: "DirectoryOrCreate"
+EOF
+fi
 sed -i '/apiServer:/r apiserver.yml' kubeadm-init.yaml
 rm -f apiserver.yml
 echo "*************************** 设置API SERVER 访问域名与审计 完毕"
@@ -139,7 +164,15 @@ source <(kubectl completion bash)
 echo "source <(kubectl completion bash)"
 else
 echo 'you can run "kubeadm init --config kubeadm-init.yaml --upload-certs --v=5" later'
+echo "note if you use nginx as lb, you need add additonal parameters when use kubeadm join command like the follow"
+echo "kubeadm join 127.0.0.1:6443 --token abcdef.0123456789abcdef \
+    --discovery-token-ca-cert-hash sha256:ed09a75d84bfbb751462262757310d0cf3d015eaa45680130be1d383245354f8 \
+    --control-plane --certificate-key 93cb0d7b46ba4ac64c6ffd2e9f022cc5f22bea81acd264fb4e1f6150489cd07a \
+    --apiserver-advertise-address <api server ip eg 192.168.1.131> \
+    --apiserver-bind-port <api server port eg 6443>"
 fi
+mkdir ~/.kube
+
 
 
 
