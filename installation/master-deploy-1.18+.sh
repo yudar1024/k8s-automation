@@ -40,6 +40,10 @@ EOF
 # echo 'cgroupDriver: systemd' >> kubeadm-init.yaml
 # echo '结束添加kubelet 相关配置'
 read -p "use lvscare or nginx as lb? 1 lvscare ,2 nginx:" lb
+if [ "$lb" = "" ];then
+echo "you must choose a lb type"
+exit 1
+fi
 echo '替换 kubeadm apiserver 地址'
 #此处为apiserver 实际的IP地址
 sed -i "s/advertiseAddress: 1.2.3.4/advertiseAddress: $host_ip/g" kubeadm-init.yaml
