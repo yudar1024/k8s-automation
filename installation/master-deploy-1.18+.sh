@@ -145,7 +145,7 @@ echo "########################### 开始设置证书时间"
 cat > cm.yml <<EOF
   extraArgs:
     experimental-cluster-signing-duration: 876000h # only for version 1.18
-    cluster-signing-duration: 876000h # when version > 1.19
+    # cluster-signing-duration: 876000h # when version > 1.19
 EOF
 sed -i 's/{}//' kubeadm-init.yaml
 sed -i '/controllerManager:/r cm.yml' kubeadm-init.yaml
