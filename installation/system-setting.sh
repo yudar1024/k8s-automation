@@ -230,7 +230,11 @@ yum install -y yum-utils device-mapper-persistent-data lvm2
 yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
 yum makecache fast
 yum list docker-ce.x86_64 --showduplicates | sort -r
-VERSION=` yum list docker-ce.x86_64 --showduplicates | grep $docker_version | sort -r -V | awk 'NR==1{print($2)}'`
+VERSION=`yum list docker-ce.x86_64 --showduplicates | grep $docker_version | sort -r -V | awk 'NR==1{print($2)}'`
+need_split=`echo $VERSION | grep :`
+if [ "$need_split" != "" ];then
+VERSION=`echo $VERSION | awk '{res=split($1,v,":");print(v[2])}'`
+fi
 yum -y install "docker-ce-$VERSION"
 #export VERSION=19.03
 #curl -fsSL "https://get.docker.com/" | bash -s -- --mirror Aliyun

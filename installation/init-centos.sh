@@ -75,3 +75,9 @@ ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg[blue]%})"
 EOF
 sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="myrobbyrussell"/g' ~/.zshrc
 # chsh -s /usr/bin/zsh 更换使用的shell 程序为zsh
+
+
+# 设置 /etc/hosts
+host_ip=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | awk -F"/" '{print $1}'`
+host_name=`hostname`
+echo "$host_ip $host_name" >> /etc/hosts
