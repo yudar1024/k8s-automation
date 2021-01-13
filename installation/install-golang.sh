@@ -6,14 +6,13 @@ mv go /usr/local
 mkdir -p /goworkspace/src
 touch /etc/profile.d/go-env.sh
 cat >> /etc/profile.d/go-env.sh <<EOF
-export PATH=$PATH:/usr/local/go/bin
 export GOROOT=/usr/local/go
 export GOPATH=/goworkspace
-export PATH=$GOPATH/bin/:$PATH
+export PATH=$GOROOT/bin/:$PATH
 export GO111MODULE=on
 GOPROXY=https://goproxy.io,direct
 EOF
-export /etc/profile
+source /etc/profile
 
 # INSTALL KUBEBUILDER
 apt-get install -y conntrack make gcc
@@ -31,7 +30,10 @@ curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
 
 # move to a long-term location and put it on your path
 # (you'll need to set the KUBEBUILDER_ASSETS env var if you put it somewhere else)
-sudo mv /tmp/kubebuilder_2.3.1_${os}_${arch} /usr/local/kubebuilder
+mv /tmp/kubebuilder_2.3.1_${os}_${arch} /usr/local/kubebuilder
+curl -s "https://raw.githubusercontent.com/\
+kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+mv kustomize /usr/local/kubebuilder/bin
 export PATH=$PATH:/usr/local/kubebuilder/bin
 fi
 if [ "$res" -eq 2 ]; then
