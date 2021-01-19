@@ -4,14 +4,11 @@ wget https://studygolang.com/dl/golang/go1.15.6.linux-amd64.tar.gz
 tar -xf go1.15.6.linux-amd64.tar.gz
 mv go /usr/local
 mkdir -p /goworkspace/src
-touch /etc/profile.d/go-env.sh
-cat >> /etc/profile.d/go-env.sh <<EOF
-export GOROOT=/usr/local/go
-export GOPATH=/goworkspace
-export PATH=$GOROOT/bin/:$PATH
-export GO111MODULE=on
-GOPROXY=https://goproxy.io,direct
-EOF
+echo "export GOROOT=/usr/local/go" >> /etc/profile
+echo "export GOPATH=/goworkspace" >> /etc/profile
+echo "export PATH=$GOROOT/bin/:$PATH" >> /etc/profile
+echo "export GO111MODULE=on" >> /etc/profile
+echo "export GOPROXY=https://goproxy.io,direct" >> /etc/profile
 source /etc/profile
 
 # INSTALL KUBEBUILDER

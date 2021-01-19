@@ -9,7 +9,7 @@ usage() {
   cat <<EOF
 Usage: $(basename "${BASH_SOURCE[0]}") [-h] [-v]  k8sversion golangversion [arg2...]
 
-Script description here.
+this script can only be used in centos or ubuntu
 
 Available options:
 
@@ -77,6 +77,31 @@ parse_params "$@"
 setup_colors
 
 # script logic here
+if [ -f "/etc/ubuntu-release" ] then 
+apt install wget git build-essential
+fi
+if [ -f "/etc/centos-release" ] then 
+yum gourp install "Development Tools"
+yum install wget git
+fi
+
+# set up golang 
+wget "https://studygolang.com/dl/golang/go${args[1]}.linux-amd64.tar.gz"
+tar -xf "go${args[1]}.linux-amd64.tar.gz"
+mv go /usr/local
+mkdir -p /goworkspace/src
+echo "export GOROOT=/usr/local/go" >> /etc/profile
+echo "export GOPATH=/goworkspace" >> /etc/profile
+echo "export PATH=$GOROOT/bin/:$PATH" >> /etc/profile
+echo "export GO111MODULE=on" >> /etc/profile
+echo "export GOPROXY=https://goproxy.io,direct" >> /etc/profile
+source /etc/profile
+
+mkdir -p /goworkspace/src/k8s.io
+cd /goworkspace/src/k8s.io
+git clone https://github.com/kubernetes/kubernetes.git
+cd kubernetes
+git checkout "tag/${args[0]}"
 make cross KUBE_BUILD_PLATFORMS=linux/amd64  GOGCFLAGS="-e"
 msg "${RED}Read parameters:${NOFORMAT}"
 msg "- tag: ${tag}"
