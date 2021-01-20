@@ -81,10 +81,10 @@ setup_colors
 #script logic here
 #apt-get install -y wget
 # INSTALL GO DEV ENV
-if [ -f "/etc/ubuntu-release" ] then 
+if [ -f "/etc/ubuntu-release" ]; then 
 apt install wget git conntrack make gcc
 fi
-if [ -f "/etc/centos-release" ] then 
+if [ -f "/etc/centos-release" ]; then 
 # yum gourp install "Development Tools"
 yum install wget git conntrack make gcc
 fi

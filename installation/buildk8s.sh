@@ -77,10 +77,10 @@ parse_params "$@"
 setup_colors
 
 # script logic here
-if [ -f "/etc/ubuntu-release" ] then 
+if [ -f "/etc/ubuntu-release" ]; then 
 apt install wget git build-essential
 fi
-if [ -f "/etc/centos-release" ] then 
+if [ -f "/etc/centos-release" ]; then 
 yum gourp install "Development Tools"
 yum install wget git
 fi
