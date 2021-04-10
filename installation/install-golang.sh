@@ -1,16 +1,16 @@
 #apt-get install -y wget
 # INSTALL GO DEV ENV
-wget https://studygolang.com/dl/golang/go1.15.6.linux-amd64.tar.gz
-tar -xf go1.15.6.linux-amd64.tar.gz
+wget https://studygolang.com/dl/golang/go1.16.3.linux-amd64.tar.gz
+tar -xf go1.16.3.linux-amd64.tar.gz
 mv go /usr/local
 mkdir -p /goworkspace/src
 touch /etc/profile.d/go-env.sh
 cat >> /etc/profile.d/go-env.sh <<EOF
-export GOROOT=/usr/local/go
-export GOPATH=/goworkspace
-export PATH=$GOROOT/bin/:$PATH
-export GO111MODULE=on
-GOPROXY=https://goproxy.io,direct
+GOROOT=/usr/local/go
+GOPATH=/goworkspace
+PATH=\$GOROOT/bin/:\$PATH
+GO111MODULE=on
+GOPROXY=https://goproxy.io,goproxy.cn,mirrors.aliyun.com/goproxy/,direct
 EOF
 source /etc/profile
 
