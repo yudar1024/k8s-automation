@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# preset start
+
 set -Eeuo pipefail
 trap cleanup SIGINT SIGTERM ERR EXIT
 
@@ -45,8 +45,8 @@ die() {
 
 parse_params() {
   # default values of variables set from params
-  # tag=1.20.1
-  # param=''
+  tag=1.20.1
+  param=''
 
   while :; do
     case "${1-}" in
@@ -76,62 +76,33 @@ parse_params() {
 parse_params "$@"
 setup_colors
 
-#preset end
-
-#script logic here
-#apt-get install -y wget
-# INSTALL GO DEV ENV
-
+# script logic here
 if [ -f "/etc/ubuntu-release" ]; then 
-apt install wget git conntrack make gcc
+apt install wget git build-essential
 fi
 if [ -f "/etc/centos-release" ]; then 
-# yum gourp install "Development Tools"
-yum install wget git conntrack make gcc
+yum gourp install "Development Tools"
+yum install wget git
 fi
-wget "https://studygolang.com/dl/golang/go${args[0]}.linux-amd64.tar.gz"
-tar -xf "go${args[0]}.linux-amd64.tar.gz"
+
+# set up golang 
+wget "https://studygolang.com/dl/golang/go${args[1]}.linux-amd64.tar.gz"
+tar -xf "go${args[1]}.linux-amd64.tar.gz"
 mv go /usr/local
 mkdir -p /goworkspace/src
-touch /etc/profile.d/go-env.sh
-cat >> /etc/profile.d/go-env.sh <<EOF
-GOROOT=/usr/local/go
-GOPATH=/goworkspace
-PATH=\$GOROOT/bin/:\$PATH
-GO111MODULE=on
-GOPROXY=https://goproxy.io,goproxy.cn,mirrors.aliyun.com/goproxy/,direct
-EOF
+echo "export GOROOT=/usr/local/go" >> /etc/profile
+echo "export GOPATH=/goworkspace" >> /etc/profile
+echo "export PATH=$GOROOT/bin/:$PATH" >> /etc/profile
+echo "export GO111MODULE=on" >> /etc/profile
+echo "export GOPROXY=https://goproxy.io,direct" >> /etc/profile
 source /etc/profile
 
-# INSTALL KUBEBUILDER
-# apt-get install -y conntrack make gcc
-read -p "Do you want install kubebuilder ? 1 yes ,2 no :"  res
-if [ "$res" = "" ];then
-echo "go dev env installed"
-exit 0
-fi
-if [ "$res" -eq 1 ]; then
-os=$(go env GOOS)
-arch=$(go env GOARCH)
-
-# download kubebuilder and extract it to tmp
-curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
-
-# move to a long-term location and put it on your path
-# (you'll need to set the KUBEBUILDER_ASSETS env var if you put it somewhere else)
-mv /tmp/kubebuilder_2.3.1_${os}_${arch} /usr/local/kubebuilder
-curl -s "https://raw.githubusercontent.com/\
-kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-mv kustomize /usr/local/kubebuilder/bin
-export PATH=$PATH:/usr/local/kubebuilder/bin
-fi
-if [ "$res" -eq 2 ]; then
-echo "go dev env installed"
-exit 0
-fi
-
-
-# show msg
+mkdir -p /goworkspace/src/k8s.io
+cd /goworkspace/src/k8s.io
+git clone https://github.com/kubernetes/kubernetes.git
+cd kubernetes
+git checkout "tag/${args[0]}"
+make cross KUBE_BUILD_PLATFORMS=linux/amd64  GOGCFLAGS="-e"
 msg "${RED}Read parameters:${NOFORMAT}"
 msg "- tag: ${tag}"
 # msg "- param: ${param}"
