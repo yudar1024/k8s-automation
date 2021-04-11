@@ -68,7 +68,7 @@ parse_params() {
 
   # check required params and arguments
   # [[ -z "${param-}" ]] && die "Missing required parameter: param"
-  [[ ${#args[@]} -eq 0 ]] && die "Missing script arguments please input golang version"
+  # [[ ${#args[@]} -eq 0 ]] && die "Missing script arguments please input golang version"
 
   return 0
 }
@@ -80,59 +80,32 @@ setup_colors
 
 #script logic here
 #apt-get install -y wget
-# INSTALL GO DEV ENV
+# create athens download config file
+cat > ./config.toml << EOF
+downloadURL = "https://gocenter.io"
 
-if [ -f "/etc/ubuntu-release" ]; then 
-apt install wget git conntrack make gcc
-fi
-if [ -f "/etc/centos-release" ]; then 
-# yum gourp install "Development Tools"
-yum install wget git conntrack make gcc
-fi
-wget "https://studygolang.com/dl/golang/go${args[0]}.linux-amd64.tar.gz"
-tar -xf "go${args[0]}.linux-amd64.tar.gz"
-mv go /usr/local
-mkdir -p /goworkspace/src
-touch /etc/profile.d/go-env.sh
-cat >> /etc/profile.d/go-env.sh <<EOF
-GOROOT=/usr/local/go
-GOPATH=/goworkspace
-PATH=\$GOROOT/bin/:\$PATH
-GO111MODULE=on
-GOPROXY=https://gocenter.io,goproxy.io,goproxy.cn,mirrors.aliyun.com/goproxy/,direct
+mode = "async_redirect"
+
+download "github.com/gomods/*" {
+    mode = "sync"
+}
+
+download "golang.org/x/*" {
+    mode = "none"
+}
+
+download "github.com/pkg/*" {
+    mode = "redirect"
+    downloadURL = "https://gocenter.io"
+}
 EOF
-source /etc/profile
-
-# INSTALL KUBEBUILDER
-# apt-get install -y conntrack make gcc
-read -p "Do you want install kubebuilder ? 1 yes ,2 no :"  res
-if [ "$res" = "" ];then
-echo "go dev env installed"
-exit 0
-fi
-if [ "$res" -eq 1 ]; then
-os=$(go env GOOS)
-arch=$(go env GOARCH)
-
-# download kubebuilder and extract it to tmp
-curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
-
-# move to a long-term location and put it on your path
-# (you'll need to set the KUBEBUILDER_ASSETS env var if you put it somewhere else)
-mv /tmp/kubebuilder_2.3.1_${os}_${arch} /usr/local/kubebuilder
-curl -s "https://raw.githubusercontent.com/\
-kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-mv kustomize /usr/local/kubebuilder/bin
-export PATH=$PATH:/usr/local/kubebuilder/bin
-fi
-if [ "$res" -eq 2 ]; then
-echo "go dev env installed"
-exit 0
-fi
-
-
+BASE_64=$(base64 -w 0 ./config.toml)
+echo "$BASE_64"
+ATHENS_STORAGE=/tmp/athens-storage
+mkdir -p $ATHENS_STORAGE
+docker run -d -v $ATHENS_STORAGE:/var/lib/athens -e ATHENS_DISK_STORAGE_ROOT=/var/lib/athens -e ATHENS_STORAGE_TYPE=disk -e ATHENS_DOWNLOAD_MODE="custom:$BASE_64" --name athens-proxy --restart always -p 3000:3000 gomods/athens:latest
 # show msg
 msg "${RED}Read parameters:${NOFORMAT}"
-msg "- tag: ${tag}"
+# msg "- tag: ${tag}"
 # msg "- param: ${param}"
 msg "- arguments: ${args[*]-}"
