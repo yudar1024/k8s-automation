@@ -95,11 +95,11 @@ mv go /usr/local
 mkdir -p /goworkspace/src
 touch /etc/profile.d/go-env.sh
 cat >> /etc/profile.d/go-env.sh <<EOF
-GOROOT=/usr/local/go
-GOPATH=/goworkspace
-PATH=\$GOROOT/bin/:\$PATH
-GO111MODULE=on
-GOPROXY=https://gocenter.io,goproxy.io,goproxy.cn,mirrors.aliyun.com/goproxy/,direct
+PATH=/usr/local/go/bin:\$PATH
+go env -w GOROOT=/usr/local/go
+go env -w GOPATH=/goworkspace
+go env -w GO111MODULE=on
+go env -w GOPROXY=https://goproxy.io,goproxy.cn,mirrors.aliyun.com/goproxy/,gocenter.io,direct
 EOF
 source /etc/profile
 
