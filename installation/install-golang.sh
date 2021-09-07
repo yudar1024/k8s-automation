@@ -95,7 +95,7 @@ mv go /usr/local
 mkdir -p /goworkspace/src
 touch /etc/profile.d/go-env.sh
 cat >> /etc/profile.d/go-env.sh <<EOF
-PATH=/usr/local/go/bin:\$PATH
+PATH="$PATH:/usr/local/go/bin"
 go env -w GOROOT=/usr/local/go
 go env -w GOPATH=/goworkspace
 go env -w GO111MODULE=on
