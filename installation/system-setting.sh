@@ -105,7 +105,7 @@ fs.inotify.max_user_instances=524288
 # 表示同一用户同时可以添加的watch数目（watch一般是针对目录，决定了同时同一用户可以监控的目录数量) 默认值 8192 在容器场景下偏小，在某些情况下可能会导致 inotify watch 数量耗尽，使得创建 Pod 不成功或者 kubelet 无法启动成功，将其优化到 524288
 fs.inotify.max_user_watches=524288
 # 没有启用syncookies的情况下，syn queue(半连接队列)大小除了受somaxconn限制外，也受这个参数的限制，默认1024，优化到8096，避免在高并发场景下丢包
-net.ipv4.tcp_max_syn_backlog=8096
+net.ipv4.tcp_max_syn_backlog=32768
 # max-file 表示系统级别的能够打开的文件句柄的数量， 一般如果遇到文件句柄达到上限时，会碰到
 # Too many open files 或者 Socket/File: Can’t open so many files 等错误
 # fs.file-max=2097152
